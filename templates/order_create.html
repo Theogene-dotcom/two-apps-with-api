@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Place Order</title>
+</head>
+<body>
+  <h1>Place an Order</h1>
+
+  <label for="product">Choose Product:</label>
+  <select id="product-select"></select>
+
+  <br><br>
+  <label for="quantity">Quantity:</label>
+  <input type="number" id="quantity" min="1" value="1" />
+
+  <br><br>
+  <button onclick="placeOrder()">Submit Order</button>
+
+  <p id="response"></p>
+
+  <script>
+    // Load product list
+    fetch('/api/products/')
+      .then(res => res.json())
+      .then(products => {
+        const select = document.getElementById('product-select');
+        products.forEach(p => {
+          const option = document.createElement('option');
+          option.value = p.id;
+          option.textContent = `${p.name} - $${p.price}`;
+          select.appendChild(option);
+        });
+      });
+
+    // Place order
+    function placeOrder() {
+      const productId = document.getElementById('product-select').value;
+      const quantity = document.getElementById('quantity').value;
+
+      fetch('/api/orders/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ product: parseInt(productId), quantity: parseInt(quantity) })
+      })
+      .then(res => res.json())
+      .then(data => {
+        const response = document.getElementById('response');
+        if (data.id) {
+          response.innerText = `✅ Order placed! Order ID: ${data.id}`;
+        } else {
+          response.innerText = `❌ Failed to place order.`;
+        }
+      });
+    }
+  </script>
+</body>
+</html>
